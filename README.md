@@ -36,7 +36,7 @@ pip install coremail
 ## Quick Start
 
 ```python
-from coremail import CoremailClient, CoremailAPI
+from coremail import CoremailClient
 
 # Initialize the client with environment variables
 client = CoremailClient()
@@ -48,23 +48,24 @@ client = CoremailClient(
     secret="your_secret_key"
 )
 
-# Initialize the API wrapper
-api = CoremailAPI(client)
-
-# Example: Check if user exists
-user_exists = api.user_exists("test_user@your-domain.com")
-print(f"User exists: {user_exists}")
+# Example: Request a token
+token = client.requestToken()
+print(f"Token: {token}")
 
 # Example: Get user attributes
-user_attrs = api.get_user_info("test_user@your-domain.com")
+user_attrs = client.getAttrs("test_user@your-domain.com")
 print(f"User attributes: {user_attrs}")
 
 # Example: Change user password
-change_result = api.change_user_attributes(
+change_result = client.changeAttrs(
     "test_user@your-domain.com",
     {"password": "new_secure_password"}
 )
 print(f"Password changed: {change_result}")
+
+# Example: Authenticate a user
+auth_result = client.authenticate("test_user@your-domain.com", "password")
+print(f"Authentication result: {auth_result}")
 ```
 
 ## Configuration
@@ -95,7 +96,7 @@ client = CoremailClient(
 
 ### CoremailClient
 
-The low-level client provides direct access to all Coremail API endpoints:
+The client provides direct access to all Coremail API endpoints:
 
 - `requestToken()` - Request a new authentication token (with 1-hour cache)
 - `authenticate(user_at_domain, password)` - Authenticate a user
@@ -108,46 +109,24 @@ The low-level client provides direct access to all Coremail API endpoints:
 - `getDomainAttrs(domain_name, attrs=None)` - Get domain attributes
 - `changeDomainAttrs(domain_name, attrs)` - Change domain attributes
 - `userExist(user_at_domain)` - Check if a user exists
-- `search_messages(user_at_domain, search_params)` - Search messages for a user
+- `search(user_at_domain, search_params)` - Search messages for a user
 - `get_logs(log_type, start_time=None, end_time=None, limit=None)` - Get system logs
 - `manage_group(operation, group_name, user_at_domain=None)` - Manage groups
 - `get_system_config(config_type=None)` - Get system configuration
 - `admin(operation, params=None)` - Perform administrative operations
 - `refresh_token()` - Force refresh the authentication token
 
-### CoremailAPI
-
-The high-level API wrapper provides simplified methods:
-
-- `get_user_info(user_at_domain)` - Get complete user information
-- `change_user_attributes(user_at_domain, attrs)` - Change user attributes
-- `create_user(user_at_domain, attrs)` - Create a new user
-- `delete_user(user_at_domain)` - Delete a user
-- `list_users(domain=None, attrs=None)` - List users in the system or domain
-- `list_domains(attrs=None)` - List domains in the system
-- `get_domain_info(domain_name, attrs=None)` - Get domain information
-- `change_domain_attributes(domain_name, attrs)` - Change domain attributes
-- `user_exists(user_at_domain)` - Check if a user exists (wrapper for userExist)
-- `search_messages(user_at_domain, search_params)` - Search messages for a user
-- `get_logs(log_type, start_time=None, end_time=None, limit=None)` - Get system logs
-- `manage_group(operation, group_name, user_at_domain=None)` - Manage groups
-- `get_system_config(config_type=None)` - Get system configuration
-- `admin_operation(operation, params=None)` - Perform administrative operations
-- `authenticate_user(user_at_domain, password)` - Authenticate a user and return boolean
-- `check_user_exists(user_at_domain)` - Check if user exists (via getAttrs)
-
 ## Examples
 
 ### Basic User Management
 
 ```python
-from coremail import CoremailClient, CoremailAPI
+from coremail import CoremailClient
 
 client = CoremailClient()
-api = CoremailAPI(client)
 
 # Create a new user
-new_user_result = api.create_user(
+new_user_result = client.create(
     "newuser@your-domain.com",
     {
         "password": "initial_password",
@@ -158,7 +137,7 @@ new_user_result = api.create_user(
 )
 
 # Update user attributes
-update_result = api.change_user_attributes(
+update_result = client.changeAttrs(
     "newuser@your-domain.com",
     {
         "password": "new_secure_password",
@@ -167,23 +146,23 @@ update_result = api.change_user_attributes(
 )
 
 # Get user info
-user_info = api.get_user_info("newuser@your-domain.com")
+user_info = client.getAttrs("newuser@your-domain.com")
 
 # Delete user
-delete_result = api.delete_user("newuser@your-domain.com")
+delete_result = client.delete("newuser@your-domain.com")
 ```
 
 ### Domain Management
 
 ```python
 # List all domains
-domains = api.list_domains()
+domains = client.listDomains()
 
 # Get domain information
-domain_info = api.get_domain_info("your-domain.com")
+domain_info = client.getDomainAttrs("your-domain.com")
 
 # Update domain settings
-api.change_domain_attributes(
+client.changeDomainAttrs(
     "your-domain.com",
     {
         "quota_mb": 1024000,
@@ -196,14 +175,13 @@ api.change_domain_attributes(
 ### Authentication and Validation
 
 ```python
-# Check if user exists
-exists = api.user_exists("test@your-domain.com")
+# Check if user exists by attempting to get attributes
+result = client.getAttrs("test@your-domain.com")
+exists = result.get('code') == 0
 
-# Authenticate user
-is_authenticated = api.authenticate_user("user@domain.com", "password")
-
-# Manual authentication
+# Authenticate user directly
 auth_response = client.authenticate("user@domain.com", "password")
+is_authenticated = auth_response.get('code') == 0
 ```
 
 ## Development

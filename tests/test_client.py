@@ -1,12 +1,12 @@
 """
-Unit tests for Coremail SDK
+Unit tests for Coremail SDK - Client only
 """
 import os
 import pytest
 import responses
-from coremail import CoremailClient, CoremailAPI
+from coremail import CoremailClient
 
-# Global test constants - defined here since importing from conftest can cause issues
+# Global test constants
 TEST_BASE_URL = "http://test-coremail.com/apiws/v3"
 TEST_APP_ID = "test_app@test-domain.com"
 TEST_SECRET = "test_secret"
@@ -143,24 +143,10 @@ class TestCoremailClient:
         assert result["code"] == 0
         assert result["result"] is True
 
-
-class TestCoremailAPI:
-    """Test cases for the CoremailAPI class"""
-    
-    @pytest.fixture
-    def api(self):
-        """Create a test API instance"""
-        client = CoremailClient(
-            base_url=TEST_BASE_URL,
-            app_id=TEST_APP_ID,
-            secret=TEST_SECRET
-        )
-        return CoremailAPI(client)
-    
     @responses.activate
-    def test_get_user_info(self, api):
-        """Test getting user info through the API wrapper"""
-        # Mock the token request
+    def test_create(self, client):
+        """Test creating a user"""
+        # First, mock the token request
         responses.add(
             responses.POST,
             f"{TEST_BASE_URL}/requestToken",
@@ -168,65 +154,124 @@ class TestCoremailAPI:
             status=200
         )
         
-        # Mock the getAttrs request
+        # Then, mock the create request
         responses.add(
             responses.POST,
-            f"{TEST_BASE_URL}/getAttrs",
+            f"{TEST_BASE_URL}/create",
+            json={"code": 0},
+            status=200
+        )
+        
+        result = client.create(TEST_USER, {"password": "initial_password", "quota_mb": 1024})
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_delete(self, client):
+        """Test deleting a user"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the delete request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/delete",
+            json={"code": 0},
+            status=200
+        )
+        
+        result = client.delete(TEST_USER)
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_list_users(self, client):
+        """Test listing users"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the list request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/list",
+            json={"code": 0, "result": {"users": [TEST_USER]}},
+            status=200
+        )
+        
+        result = client.list_users(domain=TEST_DOMAIN)
+        
+        assert result["code"] == 0
+        assert "users" in result["result"]
+
+    @responses.activate
+    def test_listDomains(self, client):
+        """Test listing domains"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the listDomains request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/listDomains",
+            json={"code": 0, "result": {"domains": [TEST_DOMAIN]}},
+            status=200
+        )
+        
+        result = client.listDomains()
+        
+        assert result["code"] == 0
+        assert "domains" in result["result"]
+
+    @responses.activate
+    def test_getDomainAttrs(self, client):
+        """Test getting domain attributes"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the getDomainAttrs request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/getDomainAttrs",
             json={
                 "code": 0,
                 "result": {
-                    "user_id": "test_user",
                     "domain_name": TEST_DOMAIN,
-                    "password": "{enc8}encrypted_password"
+                    "quota_mb": 1024000,
+                    "enabled": True
                 }
             },
             status=200
         )
         
-        user_info = api.get_user_info(TEST_USER)
+        result = client.getDomainAttrs(TEST_DOMAIN)
         
-        assert user_info["code"] == 0
-        assert user_info["result"]["user_id"] == "test_user"
-    
-    @responses.activate
-    def test_authenticate_user(self, api):
-        """Test user authentication through the API wrapper"""
-        # Mock the token request
-        responses.add(
-            responses.POST,
-            f"{TEST_BASE_URL}/requestToken",
-            json={"code": 0, "result": "test_token_hash"},
-            status=200
-        )
-        
-        # Mock the authenticate request for success
-        responses.add(
-            responses.POST,
-            f"{TEST_BASE_URL}/authenticate",
-            json={"code": 0, "message": None},
-            status=200
-        )
-        
-        # Mock the authenticate request for failure
-        responses.add(
-            responses.POST,
-            f"{TEST_BASE_URL}/authenticate",
-            json={"code": 19, "message": "USER_NOT_FOUND"},
-            status=200
-        )
-        
-        # Test successful authentication
-        is_authenticated = api.authenticate_user(TEST_USER, "password")
-        assert is_authenticated is True
-        
-        # Test failed authentication
-        is_authenticated = api.authenticate_user(TEST_USER2, "password")
-        assert is_authenticated is False
+        assert result["code"] == 0
+        assert result["result"]["domain_name"] == TEST_DOMAIN
 
     @responses.activate
-    def test_change_user_attributes(self, api):
-        """Test changing user attributes through the API wrapper"""
-        # Mock the token request
+    def test_changeDomainAttrs(self, client):
+        """Test changing domain attributes"""
+        # First, mock the token request
         responses.add(
             responses.POST,
             f"{TEST_BASE_URL}/requestToken",
@@ -234,22 +279,22 @@ class TestCoremailAPI:
             status=200
         )
         
-        # Mock the changeAttrs request
+        # Then, mock the changeDomainAttrs request
         responses.add(
             responses.POST,
-            f"{TEST_BASE_URL}/changeAttrs",
+            f"{TEST_BASE_URL}/changeDomainAttrs",
             json={"code": 0},
             status=200
         )
         
-        result = api.change_user_attributes(TEST_USER, {"password": "new_password"})
+        result = client.changeDomainAttrs(TEST_DOMAIN, {"quota_mb": 2048000})
         
         assert result["code"] == 0
 
     @responses.activate
-    def test_user_exists(self, api):
-        """Test checking if a user exists via API wrapper"""
-        # Mock the token request
+    def test_search(self, client):
+        """Test searching messages"""
+        # First, mock the token request
         responses.add(
             responses.POST,
             f"{TEST_BASE_URL}/requestToken",
@@ -257,14 +302,107 @@ class TestCoremailAPI:
             status=200
         )
         
-        # Mock the userExist request
+        # Then, mock the search request
         responses.add(
             responses.POST,
-            f"{TEST_BASE_URL}/userExist",
-            json={"code": 0, "result": True},
+            f"{TEST_BASE_URL}/search",
+            json={"code": 0, "result": {"messages": []}},
             status=200
         )
         
-        result = api.user_exists(TEST_USER)
+        result = client.search(TEST_USER, {"keyword": "test"})
         
-        assert result is True
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_get_logs(self, client):
+        """Test getting logs"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the getLogs request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/getLogs",
+            json={"code": 0, "result": {"logs": []}},
+            status=200
+        )
+        
+        result = client.get_logs("login")
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_manage_group(self, client):
+        """Test managing groups"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the manageGroup request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/manageGroup",
+            json={"code": 0},
+            status=200
+        )
+        
+        result = client.manage_group("add", "test_group", TEST_USER)
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_get_system_config(self, client):
+        """Test getting system config"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the getSystemConfig request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/getSystemConfig",
+            json={"code": 0, "result": {"config": {}}},
+            status=200
+        )
+        
+        result = client.get_system_config()
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_admin(self, client):
+        """Test admin operation"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the admin request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/admin",
+            json={"code": 0},
+            status=200
+        )
+        
+        result = client.admin("status_check")
+        
+        assert result["code"] == 0
+
