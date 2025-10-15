@@ -23,11 +23,11 @@ jobs:
     - name: Install uv
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        source "$HOME/.cargo/env"
         
-    - name: Install dependencies
+    - name: Install build tools
       run: |
-        uv pip install build twine
+        uv pip install --system build twine
         
     - name: Build package
       run: |
