@@ -1,18 +1,43 @@
 [project]
 name = "coremail"
 version = "0.1.0"
-description = "A Python SDK for Coremail XT API"
+description = "A comprehensive Python SDK for interacting with Coremail XT API"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
     {name = "liudonghua", email = "liudonghua123@gmail.com"}
 ]
+maintainers = [
+    {name = "liudonghua", email = "liudonghua123@gmail.com"}
+]
+keywords = ["coremail", "email", "sdk", "api", "email-management", "email-server"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Communications :: Email"
+]
 dependencies = [
     "requests>=2.25.0",
     "python-dotenv>=0.19.0",
     "cachetools>=5.0.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/liudonghua123/coremail"
+Documentation = "https://github.com/liudonghua123/coremail#readme"
+Repository = "https://github.com/liudonghua123/coremail"
+Changelog = "https://github.com/liudonghua123/coremail/releases"
+Issues = "https://github.com/liudonghua123/coremail/issues"
 
 [project.optional-dependencies]
 dev = [
