@@ -12,5 +12,8 @@ __all__ = [
     "AuthenticateResponse", 
     "GetAttrsResponse",
     "UserAttributes",
-    "CoremailConfig"
+    "CoremailConfig",
+    "AddAliasResponse",
+    "DeleteAliasResponse",
+    "GetAliasResponse"
 ]

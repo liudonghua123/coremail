@@ -21,8 +21,8 @@ A comprehensive Python SDK for interacting with Coremail XT API.
 ## Features
 
 - 🔐 **Secure Authentication**: Token-based authentication with automatic caching (1 hour TTL)
-- 📦 **Comprehensive API Coverage**: Full support for user, domain, and system management
-- 🧪 **Well Tested**: Extensively tested with 100% test coverage
+- 📦 **Comprehensive API Coverage**: Full support for user, domain, alias, and system management
+- 🧪 **Well Tested**: Extensively tested with comprehensive test coverage
 - 📝 **Type Hints**: Full type annotations for better development experience
 - 📊 **Rate Limiting**: Built-in token caching to optimize API usage
 - 🔄 **Error Handling**: Unified error handling with proper exceptions
@@ -114,6 +114,9 @@ The client provides direct access to all Coremail API endpoints:
 - `manage_group(operation, group_name, user_at_domain=None)` - Manage groups
 - `get_system_config(config_type=None)` - Get system configuration
 - `admin(operation, params=None)` - Perform administrative operations
+- `addSmtpAlias(user_at_domain, alias_user_at_domain)` - Add an SMTP alias to a user
+- `delSmtpAlias(user_at_domain, alias_user_at_domain)` - Delete an SMTP alias from a user
+- `getSmtpAlias(user_at_domain)` - Get all SMTP aliases for a user
 - `refresh_token()` - Force refresh the authentication token
 
 ## Examples
@@ -182,6 +185,24 @@ exists = result.get('code') == 0
 # Authenticate user directly
 auth_response = client.authenticate("user@domain.com", "password")
 is_authenticated = auth_response.get('code') == 0
+```
+
+### Alias Management
+
+```python
+# Add an SMTP alias to a user
+add_result = client.addSmtpAlias("user@your-domain.com", "alias@your-domain.com")
+print(f"Alias added: {add_result['code'] == 0}")
+
+# Get all SMTP aliases for a user
+aliases_result = client.getSmtpAlias("user@your-domain.com")
+if aliases_result['code'] == 0:
+    aliases = aliases_result['result'].split(',')
+    print(f"User aliases: {aliases}")
+
+# Delete an SMTP alias from a user
+delete_result = client.delSmtpAlias("user@your-domain.com", "alias@your-domain.com")
+print(f"Alias deleted: {delete_result['code'] == 0}")
 ```
 
 ## Development

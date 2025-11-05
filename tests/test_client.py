@@ -406,3 +406,74 @@ class TestCoremailClient:
         
         assert result["code"] == 0
 
+    @responses.activate
+    def test_addSmtpAlias(self, client):
+        """Test adding an SMTP alias"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the addSmtpAlias request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/addSmtpAlias",
+            json={"code": 0},
+            status=200
+        )
+        
+        result = client.addSmtpAlias(TEST_USER, "alias@test-domain.com")
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_delSmtpAlias(self, client):
+        """Test deleting an SMTP alias"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the delSmtpAlias request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/delSmtpAlias",
+            json={"code": 0},
+            status=200
+        )
+        
+        result = client.delSmtpAlias(TEST_USER, "alias@test-domain.com")
+        
+        assert result["code"] == 0
+
+    @responses.activate
+    def test_getSmtpAlias(self, client):
+        """Test getting SMTP aliases for a user"""
+        # First, mock the token request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/requestToken",
+            json={"code": 0, "result": "test_token_hash"},
+            status=200
+        )
+        
+        # Then, mock the getSmtpAlias request
+        responses.add(
+            responses.POST,
+            f"{TEST_BASE_URL}/getSmtpAlias",
+            json={"code": 0, "result": "alias1@test-domain.com,alias2@test-domain.com"},
+            status=200
+        )
+        
+        result = client.getSmtpAlias(TEST_USER)
+        
+        assert result["code"] == 0
+        assert "alias1@test-domain.com" in result["result"]
+        assert "alias2@test-domain.com" in result["result"]
+

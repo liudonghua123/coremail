@@ -12,7 +12,7 @@ from .typings import (
     CreateResponse, DeleteResponse, ListResponse, ListDomainsResponse, 
     GetDomainAttrsResponse, ChangeDomainAttrsResponse, AdminResponse,
     LogResponse, SearchResponse, GroupResponse, SystemConfigResponse,
-    UserExistResponse
+    UserExistResponse, AddAliasResponse, DeleteAliasResponse, GetAliasResponse
 )
 
 # Load environment variables
@@ -659,6 +659,94 @@ class CoremailClient:
         response.raise_for_status()
         
         result: UserExistResponse = response.json()
+        
+        # Check for API errors
+        if result.get('code') != 0:
+            raise Exception(f"API Error: {result.get('message', 'Unknown error')}")
+        
+        return result
+
+    def addSmtpAlias(self, user_at_domain: str, alias_user_at_domain: str) -> AddAliasResponse:
+        """
+        Add an SMTP alias for a user.
+        
+        :param user_at_domain: User identifier in format "user@domain"
+        :param alias_user_at_domain: Alias email address in format "alias@domain"
+        :return: Result of the alias addition
+        """
+        # Ensure we have a valid token (this will refresh if needed)
+        token = self.requestToken()
+        
+        url = f"{self.base_url}/addSmtpAlias"
+        
+        payload: Dict[str, Any] = {
+            "_token": token,
+            "user_at_domain": user_at_domain,
+            "alias_user_at_domain": alias_user_at_domain
+        }
+        
+        response = self.session.post(url, json=payload)
+        response.raise_for_status()
+        
+        result: AddAliasResponse = response.json()
+        
+        # Check for API errors
+        if result.get('code') != 0:
+            raise Exception(f"API Error: {result.get('message', 'Unknown error')}")
+        
+        return result
+
+    def delSmtpAlias(self, user_at_domain: str, alias_user_at_domain: str) -> DeleteAliasResponse:
+        """
+        Delete an SMTP alias for a user.
+        
+        :param user_at_domain: User identifier in format "user@domain"
+        :param alias_user_at_domain: Alias email address in format "alias@domain" to be deleted
+        :return: Result of the alias deletion
+        """
+        # Ensure we have a valid token (this will refresh if needed)
+        token = self.requestToken()
+        
+        url = f"{self.base_url}/delSmtpAlias"
+        
+        payload: Dict[str, Any] = {
+            "_token": token,
+            "user_at_domain": user_at_domain,
+            "alias_user_at_domain": alias_user_at_domain
+        }
+        
+        response = self.session.post(url, json=payload)
+        response.raise_for_status()
+        
+        result: DeleteAliasResponse = response.json()
+        
+        # Check for API errors
+        if result.get('code') != 0:
+            raise Exception(f"API Error: {result.get('message', 'Unknown error')}")
+        
+        return result
+
+    def getSmtpAlias(self, user_at_domain: str) -> GetAliasResponse:
+        """
+        Get SMTP aliases for a user.
+        
+        :param user_at_domain: User identifier in format "user@domain"
+        :return: List of aliases for the user
+        """
+        # Ensure we have a valid token (this will refresh if needed)
+        token = self.requestToken()
+        
+        url = f"{self.base_url}/getSmtpAlias"
+        
+        payload: Dict[str, Any] = {
+            "_token": token,
+            "user_at_domain": user_at_domain
+        }
+        
+        response = self.session.post(url, json=payload)
+        response.raise_for_status()
+        
+        result: GetAliasResponse = response.json()
         
         # Check for API errors
         if result.get('code') != 0:

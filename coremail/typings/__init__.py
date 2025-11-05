@@ -106,6 +106,24 @@ class UserExistResponse(TypedDict):
     result: bool
 
 
+class AddAliasResponse(TypedDict):
+    """Response from addSmtpAlias API"""
+    code: int
+    message: Optional[str]
+
+
+class DeleteAliasResponse(TypedDict):
+    """Response from delSmtpAlias API"""
+    code: int
+    message: Optional[str]
+
+
+class GetAliasResponse(TypedDict):
+    """Response from getSmtpAlias API"""
+    code: int
+    result: str  # Comma-separated list of aliases
+
+
 class UserAttributes(TypedDict, total=False):
     """User attributes structure"""
     user_id: Optional[str]

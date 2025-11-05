@@ -11,7 +11,7 @@ def main():
     # Example operations (these will fail without real credentials)
     try:
         # Get a token (this would require real credentials)
-        token = client.request_token()
+        token = client.requestToken()
         print(f"Successfully obtained token: {token[:30]}...")
     except Exception as e:
         print(f"Note: Token request failed (expected without real credentials): {e}")
