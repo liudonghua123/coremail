@@ -83,23 +83,11 @@ jobs:
         echo "New version: $NEW_VERSION"
         
         # Update pyproject.toml with the new version
-        toml set --toml-path pyproject.toml project.version "$NEW_VERSION" > pyproject.toml.tmp && mv pyproject.toml.tmp pyproject.toml
+        toml set --toml-path pyproject.toml project.version "$NEW_VERSION"
         
         # Output new version for use in later steps
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
         echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
-    - name: Read current version (for release events or dispatch without bump)
-      id: read_version
-      if: ${{ ! (github.event_name == 'workflow_dispatch' && inputs.should_bump_version == true) }}
-      run: |
-        # Read current version from pyproject.toml
-        CURRENT_VERSION=$(toml get --toml-path pyproject.toml project.version | sed 's/"//g')
-        echo "Current version: $CURRENT_VERSION"
-        
-        # Output current version for use in later steps
-        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT  # Same since no bump occurred
     
     - name: Commit and push version changes (only when version was bumped)
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.should_bump_version == true }}
