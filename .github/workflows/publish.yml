@@ -124,6 +124,33 @@ jobs:
       run: |
         uv publish
     
+    - name: Generate release notes (only when version was bumped)
+      id: release_notes
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.should_bump_version == true }}
+      run: |
+        # Get the previous tag to determine what changed
+        PREV_TAG=$(git tag --sort=-version:refname | sed -n 2p)
+        
+        # Also set a message for the release
+        if [ -z "$PREV_TAG" ]; then
+          echo "message=Initial release with all features and fixes" >> $GITHUB_OUTPUT
+        else
+          echo "message=What's Changed" >> $GITHUB_OUTPUT
+        fi
+        
+        if [ -z "$PREV_TAG" ]; then
+          # If no previous tag exists, show all commits
+          COMMITS=$(git log --oneline --no-merges)
+        else
+          # Get commits between the previous tag and current HEAD
+          COMMITS=$(git log --oneline --no-merges "$PREV_TAG..HEAD")
+        fi
+        
+        # Format the commits for the release body
+        echo "commits<<EOF" >> $GITHUB_OUTPUT
+        echo "$COMMITS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
     - name: Create GitHub Release (only when version was bumped)
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.should_bump_version == true }}
       uses: actions/create-release@v1
@@ -135,7 +162,9 @@ jobs:
         body: |
           Release version ${{ steps.version_bump.outputs.new_version }}
           
-          Changes in this release:
-          - Automatic release from GitHub Actions
+          ${{ steps.release_notes.outputs.message }}:
+          ```
+          ${{ steps.release_notes.outputs.commits }}
+          ```
         draft: false
         prerelease: false
