@@ -21,10 +21,10 @@ A comprehensive Python SDK for interacting with Coremail XT API.
 ## Features
 
 - 🔐 **Secure Authentication**: Token-based authentication with automatic caching (1 hour TTL)
-- 📦 **Comprehensive API Coverage**: Full support for user, domain, alias, and system management
+- 📦 **Comprehensive API Coverage**: Full support for user, domain, alias, organization, department, contacts and system management
 - 🧪 **Well Tested**: Extensively tested with comprehensive test coverage
-- 📝 **Type Hints**: Full type annotations for better development experience
-- 📊 **Rate Limiting**: Built-in token caching to optimize API usage
+- 📝 **Type Safe Models**: Full Pydantic models for request parameters and responses
+- 📊 **Data-Only Responses**: API methods return actual data instead of full response objects
 - 🔄 **Error Handling**: Unified error handling with proper exceptions
 
 ## Installation
@@ -96,28 +96,28 @@ client = CoremailClient(
 
 ### CoremailClient
 
-The client provides direct access to all Coremail API endpoints:
+The client provides direct access to all Coremail API endpoints with type-safe models and data-only responses:
 
-- `requestToken()` - Request a new authentication token (with 1-hour cache)
-- `authenticate(user_at_domain, password)` - Authenticate a user
-- `getAttrs(user_at_domain, attrs=None)` - Get user attributes
-- `changeAttrs(user_at_domain, attrs)` - Change user attributes
-- `create(user_at_domain, attrs)` - Create a new user
-- `delete(user_at_domain)` - Delete a user
-- `list_users(domain=None, attrs=None)` - List users in the system or domain
-- `listDomains(attrs=None)` - List domains in the system
-- `getDomainAttrs(domain_name, attrs=None)` - Get domain attributes
-- `changeDomainAttrs(domain_name, attrs)` - Change domain attributes
-- `userExist(user_at_domain)` - Check if a user exists
-- `search(user_at_domain, search_params)` - Search messages for a user
-- `get_logs(log_type, start_time=None, end_time=None, limit=None)` - Get system logs
-- `manage_group(operation, group_name, user_at_domain=None)` - Manage groups
-- `get_system_config(config_type=None)` - Get system configuration
-- `admin(operation, params=None)` - Perform administrative operations
-- `addSmtpAlias(user_at_domain, alias_user_at_domain)` - Add an SMTP alias to a user
-- `delSmtpAlias(user_at_domain, alias_user_at_domain)` - Delete an SMTP alias from a user
-- `getSmtpAlias(user_at_domain)` - Get all SMTP aliases for a user
-- `refresh_token()` - Force refresh the authentication token
+- `requestToken()` - Request a new authentication token (with 1-hour cache, returns token string)
+- `authenticate(user_at_domain, password)` - Authenticate a user (returns boolean)
+- `getAttrs(user_at_domain, attrs=None)` - Get user attributes (returns UserAttributes model)
+- `changeAttrs(user_at_domain, attrs)` - Change user attributes (returns boolean)
+- `create(user_at_domain, attrs)` - Create a new user (returns boolean)
+- `delete(user_at_domain)` - Delete a user (returns boolean)
+- `list_users(domain=None, attrs=None)` - List users in the system or domain (returns Dict[str, Any])
+- `listDomains()` - List domains in the system (returns comma-separated string of domains)
+- `getDomainAttrs(domain_name, attrs=None)` - Get domain attributes (returns DomainAttributes model)
+- `changeDomainAttrs(domain_name, attrs)` - Change domain attributes (returns boolean)
+- `userExist(user_at_domain)` - Check if a user exists (returns boolean)
+- `search(user_at_domain, search_params)` - Search messages for a user (returns Dict with results)
+- `get_logs(log_type, start_time=None, end_time=None, limit=None)` - Get system logs (returns Dict with log entries)
+- `manage_group(operation, group_name, user_at_domain=None)` - Manage groups (returns boolean)
+- `get_system_config(config_type=None)` - Get system configuration (returns Dict with config)
+- `admin(operation, params=None)` - Perform administrative operations (returns boolean)
+- `addSmtpAlias(user_at_domain, alias_user_at_domain)` - Add an SMTP alias to a user (returns boolean)
+- `delSmtpAlias(user_at_domain, alias_user_at_domain)` - Delete an SMTP alias from a user (returns boolean)
+- `getSmtpAlias(user_at_domain)` - Get all SMTP aliases for a user (returns comma-separated string of aliases)
+- `refresh_token()` - Force refresh the authentication token (returns new token string)
 
 ## Examples
 
@@ -178,13 +178,20 @@ client.changeDomainAttrs(
 ### Authentication and Validation
 
 ```python
-# Check if user exists by attempting to get attributes
-result = client.getAttrs("test@your-domain.com")
-exists = result.get('code') == 0
+# Get user attributes (returns UserAttributes model)
+try:
+    user_attrs = client.getAttrs("test@your-domain.com")
+    print(f"User status: {user_attrs.user_status}, Name: {user_attrs.true_name}")
+except Exception:
+    print("User does not exist or error occurred")
 
-# Authenticate user directly
-auth_response = client.authenticate("user@domain.com", "password")
-is_authenticated = auth_response.get('code') == 0
+# Authenticate user directly (returns boolean)
+auth_success = client.authenticate("user@domain.com", "password")
+print(f"Authentication successful: {auth_success}")
+
+# Check if user exists (returns boolean)
+user_exists = client.userExist("test@your-domain.com")
+print(f"User exists: {user_exists}")
 ```
 
 ### Alias Management
@@ -221,6 +228,14 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 # Install in development mode
 uv pip install -e ".[dev]"
 ```
+
+### Code Style
+
+This project follows these conventions:
+- Early return patterns: Check for error conditions first and return early if needed
+- Type safety: All API methods use Pydantic models for request parameters and responses  
+- Clean return values: Methods return actual data instead of full response objects
+- Consistent parameter naming: Following the original Coremail API specifications 
 
 ### Running Tests
 
