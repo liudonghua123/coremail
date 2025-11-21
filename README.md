@@ -102,13 +102,14 @@ The client provides direct access to all Coremail API endpoints with type-safe m
 - `authenticate(user_at_domain, password)` - Authenticate a user (returns boolean)
 - `getAttrs(user_at_domain, attrs=None)` - Get user attributes (returns UserAttributes model)
 - `changeAttrs(user_at_domain, attrs)` - Change user attributes (returns boolean)
-- `create(user_at_domain, attrs)` - Create a new user (returns boolean)
-- `delete(user_at_domain)` - Delete a user (returns boolean)
-- `list_users(domain=None, attrs=None)` - List users in the system or domain (returns Dict[str, Any])
-- `listDomains()` - List domains in the system (returns comma-separated string of domains)
+- `createUser(user_at_domain, attrs)` - Create a new user (returns boolean)
+- `deleteUser(user_at_domain)` - Delete a user (returns boolean)
+- `list(domain=None, attrs=None)` - List users in the system or domain (returns Dict[str, Any])
+- `getDomainList()` - List domains in the system (returns comma-separated string of domains)
 - `getDomainAttrs(domain_name, attrs=None)` - Get domain attributes (returns DomainAttributes model)
 - `changeDomainAttrs(domain_name, attrs)` - Change domain attributes (returns boolean)
 - `userExist(user_at_domain)` - Check if a user exists (returns boolean)
+- `userExist2(user_at_domain)` - Check if a user with alias name exists (returns boolean)
 - `search(user_at_domain, search_params)` - Search messages for a user (returns Dict with results)
 - `get_logs(log_type, start_time=None, end_time=None, limit=None)` - Get system logs (returns Dict with log entries)
 - `manage_group(operation, group_name, user_at_domain=None)` - Manage groups (returns boolean)
@@ -129,7 +130,7 @@ from coremail import CoremailClient
 client = CoremailClient()
 
 # Create a new user
-new_user_result = client.create(
+new_user_result = client.createUser(
     "newuser@your-domain.com",
     {
         "password": "initial_password",
@@ -152,14 +153,14 @@ update_result = client.changeAttrs(
 user_info = client.getAttrs("newuser@your-domain.com")
 
 # Delete user
-delete_result = client.delete("newuser@your-domain.com")
+delete_result = client.deleteUser("newuser@your-domain.com")
 ```
 
 ### Domain Management
 
 ```python
 # List all domains
-domains = client.listDomains()
+domains = client.getDomainList()
 
 # Get domain information
 domain_info = client.getDomainAttrs("your-domain.com")

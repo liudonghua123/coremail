@@ -144,7 +144,7 @@ class TestCoremailClient:
         assert result["result"] is True
 
     @responses.activate
-    def test_create(self, client):
+    def test_createUser(self, client):
         """Test creating a user"""
         # First, mock the token request
         responses.add(
@@ -157,17 +157,17 @@ class TestCoremailClient:
         # Then, mock the create request
         responses.add(
             responses.POST,
-            f"{TEST_BASE_URL}/create",
+            f"{TEST_BASE_URL}/createUser",
             json={"code": 0},
             status=200
         )
         
-        result = client.create(TEST_USER, {"password": "initial_password", "quota_mb": 1024})
+        result = client.createUser(TEST_USER, {"password": "initial_password", "quota_mb": 1024})
         
         assert result["code"] == 0
 
     @responses.activate
-    def test_delete(self, client):
+    def test_deleteUser(self, client):
         """Test deleting a user"""
         # First, mock the token request
         responses.add(
@@ -180,17 +180,17 @@ class TestCoremailClient:
         # Then, mock the delete request
         responses.add(
             responses.POST,
-            f"{TEST_BASE_URL}/delete",
+            f"{TEST_BASE_URL}/deleteUser",
             json={"code": 0},
             status=200
         )
         
-        result = client.delete(TEST_USER)
+        result = client.deleteUser(TEST_USER)
         
         assert result["code"] == 0
 
     @responses.activate
-    def test_list_users(self, client):
+    def test_list(self, client):
         """Test listing users"""
         # First, mock the token request
         responses.add(
@@ -214,7 +214,7 @@ class TestCoremailClient:
         assert "users" in result["result"]
 
     @responses.activate
-    def test_listDomains(self, client):
+    def test_getDomainList(self, client):
         """Test listing domains"""
         # First, mock the token request
         responses.add(
@@ -224,15 +224,15 @@ class TestCoremailClient:
             status=200
         )
         
-        # Then, mock the listDomains request
+        # Then, mock the getDomainList request
         responses.add(
             responses.POST,
-            f"{TEST_BASE_URL}/listDomains",
+            f"{TEST_BASE_URL}/getDomainList",
             json={"code": 0, "result": {"domains": [TEST_DOMAIN]}},
             status=200
         )
         
-        result = client.listDomains()
+        result = client.getDomainList()
         
         assert result["code"] == 0
         assert "domains" in result["result"]

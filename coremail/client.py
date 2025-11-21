@@ -65,7 +65,7 @@ class CoremailClient:
             'Content-Type': 'application/json'
         })
 
-    def _handle_response(self, response, expected_model):
+    def _handle_response(self, response, expected_model, throw_exception = False):
         """
         Helper method to handle API responses and validate with Pydantic models
         """
@@ -73,7 +73,7 @@ class CoremailClient:
         data = response.json()
         result = expected_model.model_validate(data)
         
-        if result.code != 0:
+        if throw_exception and result.code != 0:
             raise Exception(f"API Error {result.code}: {result.message or 'Unknown error'}")
             
         return result
@@ -162,17 +162,15 @@ class CoremailClient:
         response.raise_for_status()
         result = response.json()
         
-        if result.get('code') != 0:
-            raise Exception(f"API Error {result.get('code')}: {result.get('message', 'Authentication failed')}")
-        return True
+        return result.get('code') == 0
     
-    def getAttrs(self, user_at_domain: str, attrs: Optional[Dict[str, Any]] = None) -> UserAttributes:
+    def getAttrs(self, user_at_domain: str, attrs: Optional[Dict[str, Any]] = ['true_name', 'user_status', 'cas_name']) -> dict:
         """
         Get user attributes.
         
         :param user_at_domain: User identifier in format "user@domain"
         :param attrs: Dictionary of attribute names to retrieve (use None as value for each key), e.g., {"user_id": None, "domain_name": None}. Pass None to retrieve all attributes.
-        :return: User attributes model
+        :return: User attributes dict
         """
         # Ensure we have a valid token (this will refresh if needed)
         token = self.requestToken()
@@ -191,11 +189,10 @@ class CoremailClient:
         }
         
         response = self.session.post(url, json=payload)
-        return self._handle_response_data_only(
-            response, 
-            GetAttrsResponse, 
-            result_accessor_func=lambda r: r.get_result_data()
-        )
+        response.raise_for_status()
+        result = response.json()
+        
+        return result
     
     def changeAttrs(self, user_at_domain: str, attrs: Dict[str, Any]) -> bool:
         """
@@ -220,11 +217,9 @@ class CoremailClient:
         response.raise_for_status()
         result = response.json()
         
-        if result.get('code') != 0:
-            raise Exception(f"API Error {result.get('code')}: {result.get('message', 'Change attributes failed')}")
-        return True
+        return result.get('code') == 0
 
-    def create_user(self, user_at_domain: str, attrs: Dict[str, Any]) -> bool:
+    def createUser(self, user_at_domain: str, attrs: Dict[str, Any]) -> bool:
         """
         Create a new user.
         
@@ -247,23 +242,9 @@ class CoremailClient:
         response.raise_for_status()
         result = response.json()
         
-        if result.get('code') == 0:
-            return True
-        else:
-            raise Exception(f"API Error {result.get('code')}: {result.get('message', 'Create user failed')}")
-    
-    # Keep the old create method for backward compatibility
-    def create(self, user_at_domain: str, attrs: UserAttributes) -> CreateResponse:
-        """
-        Create a new user (backward compatibility method).
-        
-        :param user_at_domain: User identifier in format "user@domain"
-        :param attrs: UserAttributes model of attributes for the new user
-        :return: Creation result
-        """
-        return self.create_user(user_at_domain, attrs)
+        return result.get('code') == 0
 
-    def delete(self, user_at_domain: str) -> bool:
+    def deleteUser(self, user_at_domain: str) -> bool:
         """
         Delete a user.
         
@@ -289,7 +270,7 @@ class CoremailClient:
             raise Exception(f"API Error {result.get('code')}: {result.get('message', 'Delete user failed')}")
         return True
 
-    def list_users(self, domain: Optional[str] = None, attrs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def list(self, domain: Optional[str] = None, attrs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         List users in the system or in a specific domain.
         
@@ -329,7 +310,7 @@ class CoremailClient:
             result_accessor_func=lambda r: r.result
         )
 
-    def listDomains(self, attrs: Optional[Dict[str, Any]] = None) -> str:
+    def getDomainList(self, attrs: Optional[Dict[str, Any]] = None) -> str:
         """
         List domains in the system.
         
@@ -536,7 +517,7 @@ class CoremailClient:
         response = self.session.post(url, json=payload)
         return self._handle_response(response, SystemConfigResponse)
 
-    def userExist(self, user_at_domain: str) -> UserExistResponse:
+    def userExist(self, user_at_domain: str) -> bool:
         """
         Check if a user exists.
         
@@ -554,7 +535,33 @@ class CoremailClient:
         }
         
         response = self.session.post(url, json=payload)
-        return self._handle_response(response, UserExistResponse)
+        response.raise_for_status()
+        result = response.json()
+        
+        return result.get('code') == 0
+
+    def userExist2(self, user_at_domain: str) -> str:
+        """
+        Check if a user exists.
+        
+        :param user_at_domain: User identifier in format "user@domain"
+        :return: Boolean result indicating if user exists
+        """
+        # Ensure we have a valid token (this will refresh if needed)
+        token = self.requestToken()
+        
+        url = f"{self.base_url}/getSmtpAlias"
+        
+        payload: Dict[str, Any] = {
+            "_token": token,
+            "user_at_domain": user_at_domain
+        }
+        
+        response = self.session.post(url, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        
+        return result.get('code') == 0
 
     def addSmtpAlias(self, user_at_domain: str, alias_user_at_domain: str) -> bool:
         """
@@ -579,10 +586,7 @@ class CoremailClient:
         response.raise_for_status()
         result = response.json()
         
-        if result.get('code') == 0:
-            return True
-        else:
-            raise Exception(f"API Error {result.get('code')}: {result.get('message', 'Add alias failed')}")
+        return result.get('code') == 0
 
     def delSmtpAlias(self, user_at_domain: str, alias_user_at_domain: str) -> bool:
         """
@@ -607,12 +611,9 @@ class CoremailClient:
         response.raise_for_status()
         result = response.json()
         
-        if result.get('code') == 0:
-            return True
-        else:
-            raise Exception(f"API Error {result.get('code')}: {result.get('message', 'Delete alias failed')}")
+        return result.get('code') == 0
 
-    def getSmtpAlias(self, user_at_domain: str) -> str:
+    def getSmtpAlias(self, user_at_domain: str) -> GetAliasResponse:
         """
         Get SMTP aliases for a user.
         
@@ -631,7 +632,7 @@ class CoremailClient:
         
         response = self.session.post(url, json=payload)
         result = self._handle_response(response, GetAliasResponse)
-        return result.result
+        return result
 
     # 3.2 登录 section methods
     def userLogin(self, user_at_domain: str) -> SessionResponse:

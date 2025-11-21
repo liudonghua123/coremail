@@ -4,22 +4,25 @@ from pydantic import BaseModel, Field, model_validator
 
 class BaseResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
+    message: Optional[str] = None
 
 
 class AuthenticateResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class SessionInfoResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
@@ -31,13 +34,13 @@ class SessionInfoResult(BaseModel):
 
 class SessionVariableResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class UserExistResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
@@ -198,22 +201,25 @@ class GetAttrsResponse(BaseModel):
 
 class ChangeAttrsResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class CreateResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class DeleteResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class GetUserAliasResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
     message: Optional[str] = None
 
     def get_result_data(self) -> str:
@@ -225,17 +231,19 @@ class GetUserAliasResponse(BaseModel):
 
 class AddAliasResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class DeleteAliasResponse(BaseModel):
     code: int
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
 class GetAliasResponse(BaseModel):
     code: int
-    result: str  # Comma-separated list of aliases
+    result: Optional[str] = None
     message: Optional[str] = None
 
 
@@ -303,7 +311,7 @@ class GetOrgInfoResponse(BaseModel):
 
 class GetOrgListResponse(BaseModel):
     code: int
-    result: str  # Comma-separated list of org IDs
+    result: Optional[str] = None  # Comma-separated list of org IDs
     message: Optional[str] = None
 
     def get_result_data(self) -> str:
@@ -348,7 +356,7 @@ class DelOrgCosResponse(BaseModel):
 
 class GetOrgCosUserResponse(BaseModel):
     code: int
-    result: str  # Comma-separated list of user IDs
+    result: Optional[str] = None  # Comma-separated list of user IDs
     message: Optional[str] = None
 
 
@@ -483,7 +491,7 @@ class AddDomainAliasResponse(BaseModel):
 
 class GetDomainAliasResponse(BaseModel):
     code: int
-    result: str  # Comma-separated list of domain aliases
+    result: Optional[str] = None  # Comma-separated list of domain aliases
     message: Optional[str] = None
 
 
@@ -494,7 +502,7 @@ class DelDomainAliasResponse(BaseModel):
 
 class GetOrgListByDomainResponse(BaseModel):
     code: int
-    result: str  # Comma-separated list of organization IDs
+    result: Optional[str] = None  # Comma-separated list of organization IDs
     message: Optional[str] = None
 
 
@@ -560,7 +568,7 @@ class SetAdminTypeResponse(BaseModel):
 
 class GetAdminTypeResponse(BaseModel):
     code: int
-    result: str  # Format: "admin_type=...&role_id=..."
+    result: Optional[str] = None  # Format: "admin_type=...&role_id=..."
     message: Optional[str] = None
 
 
@@ -916,7 +924,7 @@ class DomainAttributeQuery(BaseModel):
 
 class GetDomainListResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
     message: Optional[str] = None
 
     def get_result_data(self) -> str:
@@ -926,12 +934,7 @@ class GetDomainListResponse(BaseModel):
         return self.result
 
 
-class BaseResponse(BaseModel):
-    code: int
-    message: Optional[str] = None
-
-
 class SessionResponse(BaseModel):
     code: int
-    result: str
+    result: Optional[str] = None
     message: Optional[str] = None
