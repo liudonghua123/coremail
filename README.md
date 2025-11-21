@@ -1,31 +1,14 @@
-# Coremail Python SDK
+# Coremail SDK for Python
 
-[![PyPI version](https://badge.fury.io/py/coremail.svg)](https://badge.fury.io/py/coremail)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/pypi/pyversions/coremail.svg)](https://pypi.org/project/coremail/)
-[![Build Status](https://github.com/liudonghua123/coremail/workflows/Tests/badge.svg)](https://github.com/liudonghua123/coremail/actions)
-
-A comprehensive Python SDK for interacting with Coremail XT API.
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [API Reference](#api-reference)
-- [Examples](#examples)
-- [Development](#development)
-- [License](#license)
+A comprehensive Python SDK for interacting with Coremail XT API v3, providing easy access to all available API endpoints for user, organization, and system management.
 
 ## Features
 
-- 🔐 **Secure Authentication**: Token-based authentication with automatic caching (1 hour TTL)
-- 📦 **Comprehensive API Coverage**: Full support for user, domain, alias, organization, department, contacts and system management
-- 🧪 **Well Tested**: Extensively tested with comprehensive test coverage
-- 📝 **Type Safe Models**: Full Pydantic models for request parameters and responses
-- 📊 **Data-Only Responses**: API methods return actual data instead of full response objects
-- 🔄 **Error Handling**: Unified error handling with proper exceptions
+- Full implementation of Coremail XT API v3 endpoints
+- Easy configuration via environment variables or explicit parameters
+- Automatic token management and caching
+- Comprehensive type hints and documentation
+- Support for all major API operations (user management, organization management, session management, etc.)
 
 ## Installation
 
@@ -33,7 +16,19 @@ A comprehensive Python SDK for interacting with Coremail XT API.
 pip install coremail
 ```
 
-## Quick Start
+## Configuration
+
+Create a `.env` file in your project root with the following variables:
+
+```env
+COREMAIL_BASE_URL=http://your-coremail-server:9900/apiws/v3
+COREMAIL_APP_ID=your_app_id@your_domain.com
+COREMAIL_SECRET=your_secret_key
+```
+
+## Usage
+
+### Basic Usage
 
 ```python
 from coremail import CoremailClient
@@ -55,242 +50,156 @@ print(f"Token: {token}")
 # Example: Get user attributes
 user_attrs = client.getAttrs("test_user@your-domain.com")
 print(f"User attributes: {user_attrs}")
-
-# Example: Change user password
-change_result = client.changeAttrs(
-    "test_user@your-domain.com",
-    {"password": "new_secure_password"}
-)
-print(f"Password changed: {change_result}")
-
-# Example: Authenticate a user
-auth_result = client.authenticate("test_user@your-domain.com", "password")
-print(f"Authentication result: {auth_result}")
 ```
 
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in your project root:
-
-```env
-COREMAIL_BASE_URL=http://your-host-of-coremail:9900/apiws/v3
-COREMAIL_APP_ID=your_app_id@your-domain.com
-COREMAIL_SECRET=your_secret_key
-```
-
-### Manual Configuration
+### User Management
 
 ```python
-from coremail import CoremailClient
-
-client = CoremailClient(
-    base_url="http://your-host-of-coremail:9900/apiws/v3",
-    app_id="your_app_id@your-domain.com", 
-    secret="your_secret_key"
-)
-```
-
-## API Reference
-
-### CoremailClient
-
-The client provides direct access to all Coremail API endpoints with type-safe models and data-only responses:
-
-- `requestToken()` - Request a new authentication token (with 1-hour cache, returns token string)
-- `authenticate(user_at_domain, password)` - Authenticate a user (returns boolean)
-- `getAttrs(user_at_domain, attrs=None)` - Get user attributes (returns UserAttributes model)
-- `changeAttrs(user_at_domain, attrs)` - Change user attributes (returns boolean)
-- `createUser(user_at_domain, attrs)` - Create a new user (returns boolean)
-- `deleteUser(user_at_domain)` - Delete a user (returns boolean)
-- `list(domain=None, attrs=None)` - List users in the system or domain (returns Dict[str, Any])
-- `getDomainList()` - List domains in the system (returns comma-separated string of domains)
-- `getDomainAttrs(domain_name, attrs=None)` - Get domain attributes (returns DomainAttributes model)
-- `changeDomainAttrs(domain_name, attrs)` - Change domain attributes (returns boolean)
-- `userExist(user_at_domain)` - Check if a user exists (returns boolean)
-- `userExist2(user_at_domain)` - Check if a user with alias name exists (returns boolean)
-- `search(user_at_domain, search_params)` - Search messages for a user (returns Dict with results)
-- `get_logs(log_type, start_time=None, end_time=None, limit=None)` - Get system logs (returns Dict with log entries)
-- `manage_group(operation, group_name, user_at_domain=None)` - Manage groups (returns boolean)
-- `get_system_config(config_type=None)` - Get system configuration (returns Dict with config)
-- `admin(operation, params=None)` - Perform administrative operations (returns boolean)
-- `addSmtpAlias(user_at_domain, alias_user_at_domain)` - Add an SMTP alias to a user (returns boolean)
-- `delSmtpAlias(user_at_domain, alias_user_at_domain)` - Delete an SMTP alias from a user (returns boolean)
-- `getSmtpAlias(user_at_domain)` - Get all SMTP aliases for a user (returns comma-separated string of aliases)
-- `refresh_token()` - Force refresh the authentication token (returns new token string)
-
-## Examples
-
-### Basic User Management
-
-```python
-from coremail import CoremailClient
-
-client = CoremailClient()
-
 # Create a new user
-new_user_result = client.createUser(
-    "newuser@your-domain.com",
-    {
-        "password": "initial_password",
-        "quota_mb": 1024,
-        "user_enabled": True,
-        "user_name": "New User"
-    }
-)
+attrs = {
+    "display_name": "John Doe",
+    "cos_id": 1,
+    "quota": 1024
+}
+client.createUser("john.doe@your-domain.com", "password123", attrs)
+
+# Get user attributes
+user_attrs = client.getAttrs("john.doe@your-domain.com")
 
 # Update user attributes
-update_result = client.changeAttrs(
-    "newuser@your-domain.com",
-    {
-        "password": "new_secure_password",
-        "quota_mb": 2048
-    }
-)
+update_attrs = {"display_name": "Jane Doe", "quota": 2048}
+client.setAttrs("john.doe@your-domain.com", update_attrs)
 
-# Get user info
-user_info = client.getAttrs("newuser@your-domain.com")
-
-# Delete user
-delete_result = client.deleteUser("newuser@your-domain.com")
+# Delete a user
+client.delUser("john.doe@your-domain.com")
 ```
+
+### Organization Management
+
+```python
+# Create an organization
+org_attrs = {
+    "org_name": "Example Organization",
+    "domain_name": "example.com",
+    "cos_id": [1],
+    "num_of_classes": [100],
+    "org_status": 0,
+    "org_expiry_date": "2025-12-31"
+}
+client.addOrg("example_org", org_attrs)
+
+# Get organization information
+org_info = client.getOrgInfo("example_org")
+
+# Update organization
+update_attrs = {"org_name": "Updated Organization Name"}
+client.alterOrg("example_org", update_attrs)
+```
+
+### Session Management
+
+```python
+# User login to get session ID
+session_id = client.userLogin("user@domain.com")
+print(f"Session ID: {session_id}")
+
+# Check user session
+user_info = client.sesTimeOut(session_id)
+print(f"User info: {user_info}")
+
+# Logout user
+client.userLogout(session_id)
+```
+
+## Available Methods
+
+The SDK includes methods for all Coremail XT API v3 endpoints:
+
+### Access Token
+- `requestToken()` - Request a new access token
+
+### Login
+- `userLogin(user_at_domain)` - User login to get session ID
+- `userLoginEx(user_at_domain, attrs)` - User login with additional parameters
+- `userExist(user_at_domain)` - Check if user exists
+- `authenticate(user_at_domain, password)` - Verify user password
+- `sesTimeOut(ses_id)` - Check user's session and return user information
+- `sesRefresh(ses_id)` - Refresh user's session
+- `getSessionVar(ses_id, ses_key)` - Get variable from user's session
+- `userLogout(ses_id)` - Logout user session
+- `setSessionVar(ses_id, ses_key, ses_var)` - Set variable in user's session
+
+### Organization Management
+- `addOrg(org_id, attrs)` - Create organization
+- `getOrgInfo(org_id, attrs)` - Get organization info
+- `alterOrg(org_id, attrs)` - Modify organization
+- `addOrgDomain(org_id, domain_name)` - Add domain to organization
+- `delOrgDomain(org_id, domain_name)` - Delete domain from organization
+- `addOrgCos(org_id, num_of_classes, cos_name, cos_id)` - Add service level
+- `alterOrgCos(org_id, num_of_classes, cos_name, cos_id)` - Update service level
+- `delOrgCos(org_id, cos_id)` - Delete service level
+- `getOrgCosUser(org_id, cos_id)` - Get users in service level
+- `getOrgList()` - Get list of organizations
+- `addUnit(org_id, unit_name, attrs)` - Add organizational unit
+- `delUnit(org_id, unit_name)` - Delete organizational unit
+- `getUnitAttrs(org_id, unit_name, attrs)` - Get organizational unit attributes
+- `setUnitAttrs(org_id, unit_name, attrs)` - Set organizational unit attributes
+
+### User Management
+- `createUser(user_at_domain, password, attrs)` - Create user
+- `deleteUser(user_at_domain)` - Delete user
+- `getAttrs(user_at_domain, attrs)` - Get user attributes
+- `changeAttrs(user_at_domain, attrs)` - Change user attributes
+- `addSmtpAlias(user_at_domain, alias)` - Add SMTP alias for user
+- `delSmtpAlias(user_at_domain, alias)` - Delete SMTP alias for user
+- `getSmtpAlias(user_at_domain)` - Get SMTP aliases for user
+- `setAdminType(user_at_domain, admin_type)` - Set admin type for user
+- `getAdminType(user_at_domain)` - Get admin type for user
+- `renameUser(old_user_at_domain, new_user_at_domain)` - Rename user
+- `moveUser(user_at_domain, target_org_id, target_unit_name)` - Move user to different organization/unit
+
+### Object Management
+- `createObj(obj_type, obj_name, org_id, attrs)` - Create object (e.g., mailing list)
+- `getObjAttrs(obj_type, obj_name, org_id, attrs)` - Get object attributes
+- `setObjAttrs(obj_type, obj_name, org_id, attrs)` - Set object attributes
+- `deleteObj(obj_type, obj_name, org_id)` - Delete object
 
 ### Domain Management
+- `domainExist(domain_name)` - Check if domain exists
+- `getDomainList(start, limit)` - Get domain list
+- `addDomain25(domain_name, attrs)` - Add domain for port 25 (SMTP)
+- `delDomain25(domain_name)` - Delete domain for port 25 (SMTP)
+- `addDomainAlias(domain_name, alias_domain_name)` - Add domain alias
+- `getDomainAlias(domain_name)` - Get domain aliases
+- `delDomainAlias(domain_name, alias_domain_name)` - Delete domain alias
+- `getOrgListByDomain(domain_name)` - Get organization list by domain
+
+### Mail Information
+- `listMailInfos(user_at_domain, start_time, end_time, attrs)` - List mail information
+- `getNewMailInfos(user_at_domain, start_time, end_time, attrs)` - Get new mail information
+
+### Transport
+- `smtpTransport(sender, recipient, content)` - SMTP transport for message delivery
+
+## Error Handling
+
+The SDK raises exceptions for API errors:
 
 ```python
-# List all domains
-domains = client.getDomainList()
-
-# Get domain information
-domain_info = client.getDomainAttrs("your-domain.com")
-
-# Update domain settings
-client.changeDomainAttrs(
-    "your-domain.com",
-    {
-        "quota_mb": 1024000,
-        "max_users": 1000,
-        "enabled": True
-    }
-)
-```
-
-### Authentication and Validation
-
-```python
-# Get user attributes (returns UserAttributes model)
 try:
-    user_attrs = client.getAttrs("test@your-domain.com")
-    print(f"User status: {user_attrs.user_status}, Name: {user_attrs.true_name}")
-except Exception:
-    print("User does not exist or error occurred")
-
-# Authenticate user directly (returns boolean)
-auth_success = client.authenticate("user@domain.com", "password")
-print(f"Authentication successful: {auth_success}")
-
-# Check if user exists (returns boolean)
-user_exists = client.userExist("test@your-domain.com")
-print(f"User exists: {user_exists}")
-```
-
-### Alias Management
-
-```python
-# Add an SMTP alias to a user
-add_result = client.addSmtpAlias("user@your-domain.com", "alias@your-domain.com")
-print(f"Alias added: {add_result['code'] == 0}")
-
-# Get all SMTP aliases for a user
-aliases_result = client.getSmtpAlias("user@your-domain.com")
-if aliases_result['code'] == 0:
-    aliases = aliases_result['result'].split(',')
-    print(f"User aliases: {aliases}")
-
-# Delete an SMTP alias from a user
-delete_result = client.delSmtpAlias("user@your-domain.com", "alias@your-domain.com")
-print(f"Alias deleted: {delete_result['code'] == 0}")
+    user_attrs = client.getAttrs("nonexistent_user@domain.com")
+except Exception as e:
+    print(f"API Error: {e}")
 ```
 
 ## Development
 
-### Setup
+To run the example:
 
 ```bash
-# Clone the repository
-git clone https://github.com/liudonghua123/coremail.git
-cd coremail
-
-# Create virtual environment
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install in development mode
-uv pip install -e ".[dev]"
+python example.py
 ```
-
-### Code Style
-
-This project follows these conventions:
-- Early return patterns: Check for error conditions first and return early if needed
-- Type safety: All API methods use Pydantic models for request parameters and responses  
-- Clean return values: Methods return actual data instead of full response objects
-- Consistent parameter naming: Following the original Coremail API specifications 
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run tests with coverage
-pytest --cov=coremail
-
-# Run specific test file
-pytest tests/test_client.py
-```
-
-### Code Quality
-
-```bash
-# Run type checking
-mypy coremail
-
-# Format code
-black coremail tests
-
-# Check linting
-flake8 coremail tests
-```
-
-### Building
-
-```bash
-# Build the package
-python -m build
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite (`pytest`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-If you encounter any issues, please file them in the [Issues](https://github.com/liudonghua123/coremail/issues) section of the repository.
-
-For questions and support, you can:
-- Open an issue on GitHub
-- Check the documentation
-- Look at the examples in the `examples/` directory
+This project is licensed under the MIT License - see the LICENSE file for details.
