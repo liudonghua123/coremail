@@ -956,6 +956,73 @@ class CoremailClient:
             data["attrs"] = attrs_dict
         return self._make_request("/getObjAttrs", data)
 
+    def getUserFromCasName(self, cas_name: str) -> Optional[str]:
+        """
+        Get user email address from CAS name using submitJSON API.
+
+        Args:
+            cas_name: The CAS name to search for
+
+        Returns:
+            The user_at_domain corresponding to the cas_name, or None if not found
+
+        Example:
+            >>> client = CoremailClient()
+            >>> user_email = client.getUserFromCasName("5718763785857145")
+            >>> print(user_email)  # Output: admin@sousuke5012.cn
+        """
+        data = {
+            "cmd": 302,
+            "scope": 2,
+            "limit": "-1",
+            "distinct": "false",
+            "filter": {
+                "name": "cas_name",
+                "op": 0,
+                "val": cas_name
+            }
+        }
+
+        url = f"{self.base_url}/"
+        request_data = {"_token": self._get_token(), **data}
+
+        response = self.session.post(url, json=request_data)
+        response.raise_for_status()
+        result = response.json()
+
+        # Check if the request was successful
+        if result.get("code") != 0:
+            return None
+
+        result_data = result.get("result", {})
+        users = result_data.get("u", [])
+
+        if not users:
+            return None
+
+        # Take the first user
+        user = users[0]
+        user_dn = user.get("tdn", "")
+
+        # Parse the DN to extract admin and domain parts
+        # Format: un=admin,dn=domain,dd=1,ou=(org=a;pro=1)
+        if user_dn and user_dn.startswith("un="):
+            # Extract the admin and domain parts
+            parts = user_dn.split(",")
+            admin = None
+            domain = None
+            for part in parts:
+                if part.startswith("un="):
+                    admin = part.split("=")[1]
+                elif part.startswith("dn="):
+                    domain = part.split("=")[1]
+
+            if admin and domain:
+                return f"{admin}@{domain}"
+
+        return None
+
+
     def setObjAttrs(self, obj_type: str, obj_name: str, org_id: str, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Set object attributes.

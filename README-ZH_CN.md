@@ -184,6 +184,9 @@ SDK 包含所有 Coremail XT API v3 端点的方法：
 ### 传输
 - `smtpTransport(sender, recipient, content)` - SMTP 传输邮件
 
+### 用户查询
+- `getUserFromCasName(cas_name)` - 根据CAS名称获取用户邮箱地址
+
 ## 错误处理
 
 SDK 会返回原始 API 响应，包括 code、result 和 message 字段。应用程序应检查响应中的 code 字段以确定操作是否成功：

@@ -182,6 +182,9 @@ The SDK includes methods for all Coremail XT API v3 endpoints:
 ### Transport
 - `smtpTransport(sender, recipient, content)` - SMTP transport for message delivery
 
+### User Lookup
+- `getUserFromCasName(cas_name)` - Get user email address from CAS name
+
 ## Error Handling
 
 The SDK raises exceptions for API errors:
