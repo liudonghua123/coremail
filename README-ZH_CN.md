@@ -124,6 +124,7 @@ SDK 包含所有 Coremail XT API v3 端点的方法：
 - `userLogin(user_at_domain)` - 用户登录获取会话ID
 - `userLoginEx(user_at_domain, attrs)` - 带附加参数的用户登录
 - `userExist(user_at_domain)` - 检查用户是否存在
+- `userExist2(user_at_domain)` - 检查用户是否存在(排除别名) (returns boolean)
 - `authenticate(user_at_domain, password)` - 验证用户密码
 - `sesTimeOut(ses_id)` - 检查用户会话并返回用户信息
 - `sesRefresh(ses_id)` - 刷新用户会话

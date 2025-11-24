@@ -122,6 +122,7 @@ The SDK includes methods for all Coremail XT API v3 endpoints:
 - `userLogin(user_at_domain)` - User login to get session ID
 - `userLoginEx(user_at_domain, attrs)` - User login with additional parameters
 - `userExist(user_at_domain)` - Check if user exists
+- `userExist2(user_at_domain)` - Check if a user without alias name exists (returns boolean)
 - `authenticate(user_at_domain, password)` - Verify user password
 - `sesTimeOut(ses_id)` - Check user's session and return user information
 - `sesRefresh(ses_id)` - Refresh user's session

@@ -159,6 +159,27 @@ class CoremailClient:
         }
         return self._make_request("/userExist", data)
 
+    def userExist2(self, user_at_domain: str) -> Dict[str, Any]:
+        """
+        Check if user exists without alias user.
+        
+        Args:
+            user_at_domain: User email address (e.g., "user@example.com")
+            
+        Returns:
+            Response bool
+            
+        Example:
+            >>> client = CoremailClient()
+            >>> response = client.userExist("user@example.com")
+            >>> print(response)
+        """
+        data = {
+            "user_at_domain": user_at_domain
+        }
+        result =  self._make_request("/getSmtpAlias", data)
+        return result.get('code') == 0
+
     def authenticate(self, user_at_domain: str, password: str) -> Dict[str, Any]:
         """
         Verify user password.
