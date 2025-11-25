@@ -767,7 +767,7 @@ class CoremailClient:
         """
         data = {
             "user_at_domain": user_at_domain,
-            "alias": alias
+            "alias_user_at_domain": alias
         }
         return self._make_request("/addSmtpAlias", data)
 
@@ -789,7 +789,7 @@ class CoremailClient:
         """
         data = {
             "user_at_domain": user_at_domain,
-            "alias": alias
+            "alias_user_at_domain": alias
         }
         return self._make_request("/delSmtpAlias", data)
 
